@@ -1,0 +1,10 @@
+{
+  "adapters": {
+    "python": {
+      "command": "uv",
+      "args": ["run", "--with", "debugpy", "-m", "debugpy.adapter"],
+      "env": {},
+      "cwd": ""
+    }
+  }
+}

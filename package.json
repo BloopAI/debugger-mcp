@@ -1,0 +1,51 @@
+{
+  "name": "interactive-debugger-mcp-server",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "mocha test/**/*.test.ts",
+    "build": "tsc && cp -R config dist/",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write .",
+    "start": "node dist/index.js",
+    "dev": "tsc -w",
+    "clean": "rimraf dist",
+    "rebuild": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "debugger",
+    "ai",
+    "debug-adapter-protocol",
+    "dap"
+  ],
+  "author": "",
+  "license": "MIT",
+  "description": "An MCP server that provides interactive debugging capabilities to AI coding agents",
+  "devDependencies": {
+    "@types/chai": "^4.3.20",
+    "@types/fs-extra": "^11.0.4",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.15.20",
+    "@types/yargs": "^17.0.32",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "axios": "^1.7.2",
+    "chai": "^4.5.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-chai-friendly": "^1.0.1",
+    "eslint-plugin-prettier": "^5.2.1",
+    "fs-extra": "^11.3.0",
+    "mocha": "^11.4.0",
+    "prettier": "^3.3.3",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.4",
+    "@vscode/debugprotocol": "^1.68.0",
+    "ergonomic-debugger-client": "file:./ergonomic-debugger-client",
+    "yargs": "^17.7.2"
+  }
+}
