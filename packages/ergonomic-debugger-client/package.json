@@ -1,0 +1,58 @@
+{
+  "name": "@bloopai/ergonomic-debugger-client",
+  "version": "0.0.1",
+  "author": "",
+  "license": "MIT",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write .",
+    "test": "mocha --exit -r ts-node/register 'test/**/*.test.ts'",
+    "test:integration": "mocha --exit -r ts-node/register 'test/**/*.integration.test.ts'",
+    "test:unit": "mocha --exit -r ts-node/register 'test/**/!(*integration).test.ts'",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@types/chai": "^4.3.16",
+    "@types/chai-as-promised": "^8.0.2",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^22.15.19",
+    "@types/path-browserify": "^1.0.3",
+    "@types/sinon": "^17.0.4",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@vscode/debugadapter": "^1.68.0",
+    "@vscode/debugadapter-testsupport": "^1.68.0",
+    "chai": "^4.4.1",
+    "chai-as-promised": "^8.0.1",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-chai-friendly": "^1.0.1",
+    "eslint-plugin-prettier": "^5.2.1",
+    "mocha": "^10.7.0",
+    "prettier": "^3.3.3",
+    "sinon": "^20.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@vscode/debugprotocol": "^1.68.0",
+    "pino": "^8.21.0"
+  }
+}
+

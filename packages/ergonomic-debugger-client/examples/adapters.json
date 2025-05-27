@@ -1,0 +1,33 @@
+{
+  "adapters": {
+    "node": {
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/node_modules/@vscode/node-debug2/out/src/nodeDebug.js"
+      ],
+      "env": {
+        "NODE_PATH": "${workspaceFolder}/node_modules"
+      }
+    },
+    "chrome": {
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/node_modules/@vscode/chrome-debug/out/src/chromeDebug.js"
+      ]
+    },
+    "python": {
+      "command": "python",
+      "args": ["-m", "debugpy.adapter"]
+    },
+    "go": {
+      "command": "dlv",
+      "args": ["dap"]
+    },
+    "mock": {
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/node_modules/@vscode/mock-debug/out/mockDebug.js"
+      ]
+    }
+  }
+}

@@ -1,0 +1,3 @@
+#[submodule "test/vendor/vscode-mock-debug"]
+#	path = test/vendor/vscode-mock-debug
+#	url = https://github.com/microsoft/vscode-mock-debug
