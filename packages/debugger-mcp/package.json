@@ -45,7 +45,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.4",
     "@vscode/debugprotocol": "^1.68.0",
-    "ergonomic-debugger-client": "file:./ergonomic-debugger-client",
+    "@bloopai/ergonomic-debugger-client": "0.0.1",
     "yargs": "^17.7.2"
   }
 }

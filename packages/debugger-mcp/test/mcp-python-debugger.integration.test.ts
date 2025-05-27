@@ -6,7 +6,7 @@ import { expect } from 'chai';
 import { describe, it, before, after } from 'mocha';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import type { AdapterConfig, DebugProtocol } from 'ergonomic-debugger-client';
+import type { AdapterConfig, DebugProtocol } from '@bloopai/ergonomic-debugger-client';
 import { McpAsyncEvent } from '../src/types/mcp_protocol_extensions';
 import {
   HandleStartDebugSessionResult,

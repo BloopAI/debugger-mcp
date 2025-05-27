@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import * as path from 'path';
-import type { DebugProtocol } from 'ergonomic-debugger-client';
+import type { DebugProtocol } from '@bloopai/ergonomic-debugger-client';
 import {
   StartDebugSessionArgs,
   GetSessionDetailsArgs,
