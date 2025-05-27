@@ -1,5 +1,5 @@
 import { DebugProtocol } from '@vscode/debugprotocol';
-import { AdapterConfig } from 'ergonomic-debugger-client';
+import { AdapterConfig } from '@bloopai/ergonomic-debugger-client';
 
 export type McpDebugErrorType =
   | 'dap_request_error'

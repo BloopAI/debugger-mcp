@@ -197,7 +197,7 @@ import {
   DAPSessionHandler,
   LoggerInterface,
   SessionStatus,
-} from 'ergonomic-debugger-client';
+} from '@bloopai/ergonomic-debugger-client';
 
 export class WrappedDebugSession {
   public readonly originalSession: DebugSession;

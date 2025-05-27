@@ -70,7 +70,7 @@ import {
   AdapterConfigLoader,
   AdapterProcessError,
   DAPRequestError,
-} from 'ergonomic-debugger-client';
+} from '@bloopai/ergonomic-debugger-client';
 
 import {
   handleStartDebugSession,

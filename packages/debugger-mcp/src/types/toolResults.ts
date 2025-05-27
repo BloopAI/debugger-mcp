@@ -1,5 +1,5 @@
 import { DebugProtocol } from '@vscode/debugprotocol';
-import { AdapterConfig } from 'ergonomic-debugger-client';
+import { AdapterConfig } from '@bloopai/ergonomic-debugger-client';
 import {
   SessionInfo as ModelSessionInfo,
   BreakpointResult as ModelBreakpointResult,

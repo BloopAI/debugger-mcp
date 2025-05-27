@@ -75,7 +75,7 @@ import {
   EvaluationResult as EDCEvaluationResult,
   BreakpointConfigBuilder,
   AdapterConfig,
-} from 'ergonomic-debugger-client';
+} from '@bloopai/ergonomic-debugger-client';
 
 import {
   SessionInfo as ModelSessionInfo,

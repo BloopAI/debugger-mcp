@@ -1,0 +1,57 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Node Program",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/app.js",
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false,
+      "args": [],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    {
+      "name": "Attach to Node Process",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "address": "localhost",
+      "restart": true,
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "/app"
+    },
+    {
+      "name": "Launch Chrome against localhost",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/public"
+    },
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Go: Launch Package",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${fileDirname}"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack: Node & Chrome",
+      "configurations": [
+        "Launch Node Program",
+        "Launch Chrome against localhost"
+      ]
+    }
+  ]
+}
