@@ -264,6 +264,30 @@ function createNewDapConnection() {
 }
 
 /**
+ * Determines whether a DAP event should be filtered out to reduce noise
+ * @param {Object} message - The DAP message to check
+ * @returns {boolean} True if the message should be filtered out
+ */
+function shouldFilterEvent(message) {
+  if (message.type !== 'event') {
+    return false;
+  }
+
+  // Filter out telemetry events
+  if (message.event === 'output' && message.body?.category === 'telemetry') {
+    return true;
+  }
+
+  // Filter out loadedSource events for Node.js internals
+  if (message.event === 'loadedSource' &&
+      message.body?.source?.name?.includes('<node_internals>')) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Sets up communication parsers and data forwarding between MCP client and DAP server
  */
 function setupCommunication() {
@@ -341,6 +365,12 @@ function setupCommunication() {
         event: message.event,
         body: message.body
       });
+
+      // Filter out verbose telemetry and loadedSource events
+      if (shouldFilterEvent(message)) {
+        logger.debug('Filtered verbose event', { event: message.event });
+        return;
+      }
     } else if (message.type === 'request') {
       logger.info('DAP reverse request received', {
         command: message.command,
