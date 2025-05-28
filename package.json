@@ -4,10 +4,16 @@
   "author": "bloop",
   "license": "MIT",
   "description": "An MCP server that provides interactive debugging capabilities to AI coding agents",
+  "private": true,
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "publish-mcp": "cd packages/debugger-mcp && npm publish --access public",
+    "publish-ergonomic": "cd packages/ergonomic-debugger-client && npm publish --access public"
+  },
   "keywords": [
+    "mcp",
     "mcp",
     "debugger",
     "ai",

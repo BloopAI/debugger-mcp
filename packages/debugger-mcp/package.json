@@ -1,10 +1,13 @@
 {
   "name": "@bloopai/debugger-mcp",
-  "version": "0.0.1",
+  "version": "0.0.7",
   "author": "bloop",
   "license": "MIT",
   "description": "An MCP server that provides interactive debugging capabilities to AI coding agents",
   "main": "dist/index.js",
+  "bin": {
+    "debugger-mcp": "dist/index.js"
+  },
   "scripts": {
     "test": "mocha test/**/*.test.ts",
     "build": "tsc && cp -R config dist/",
@@ -45,7 +48,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.4",
     "@vscode/debugprotocol": "^1.68.0",
-    "@bloopai/ergonomic-debugger-client": "0.0.1",
+    "@bloopai/ergonomic-debugger-client": "*",
     "yargs": "^17.7.2"
   }
 }

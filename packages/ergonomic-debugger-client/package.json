@@ -1,7 +1,7 @@
 {
   "name": "@bloopai/ergonomic-debugger-client",
-  "version": "0.0.1",
-  "author": "",
+  "version": "0.0.2",
+  "author": "bloop",
   "license": "MIT",
   "description": "",
   "main": "dist/index.js",
@@ -55,4 +55,3 @@
     "pino": "^8.21.0"
   }
 }
-
