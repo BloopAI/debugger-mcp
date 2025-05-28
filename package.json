@@ -9,8 +9,8 @@
     "packages/*"
   ],
   "scripts": {
-    "publish-mcp": "cd packages/debugger-mcp && npm publish --access public",
-    "publish-ergonomic": "cd packages/ergonomic-debugger-client && npm publish --access public"
+    "publish-mcp": "cd packages/debugger-mcp && npm run build && npm publish --access public",
+    "publish-ergonomic": "cd packages/ergonomic-debugger-client && npm run build && npm publish --access public"
   },
   "keywords": [
     "mcp",
