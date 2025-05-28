@@ -6,13 +6,17 @@ import { expect } from 'chai';
 import { describe, it, before, after } from 'mocha';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import type { AdapterConfig, DebugProtocol } from '@bloopai/ergonomic-debugger-client';
+import type {
+  AdapterConfig,
+  DebugProtocol,
+} from '@bloopai/ergonomic-debugger-client';
 import { McpAsyncEvent } from '../src/types/mcp_protocol_extensions';
 import {
   HandleStartDebugSessionResult,
   HandleSetBreakpointResult,
   HandleContinueResult,
   HandleGetCallStackResult,
+  HandleGetSessionDetailsResult,
   HandleGetPendingAsyncEventsResult,
   HandleTerminateSessionResult,
 } from '../src/types/toolResults';
@@ -260,9 +264,34 @@ describe('MCP Python Debugger Integration Test', function () {
       initialStopEvent!.reason,
       `Initial stop reason should be 'entry' or 'step', but was '${initialStopEvent!.reason}'`,
     ).to.be.oneOf(['entry', 'step']);
-    expect(initialStopEvent!.threadId).to.be.a('number');
-    const mainThreadId = initialStopEvent!.threadId!;
-    console.log(`[INFO] Test: Stopped on entry at thread ${mainThreadId}.`);
+
+    console.log(
+      '[INFO] Test: Getting session details to find main thread ID...',
+    );
+    const sessionDetailsRaw: SdkToolResponse = await mcpClient!.callTool({
+      serverName: 'interactive-debugger',
+      name: 'get_session_details',
+      arguments: {
+        sessionId: dapSessionId!,
+      },
+    });
+    const sessionDetailsResponse = parseStdioClientToolResponse(
+      sessionDetailsRaw,
+      'get_session_details',
+    );
+    expect(sessionDetailsResponse.success, 'get_session_details should succeed')
+      .to.be.true;
+
+    const sessionResult =
+      sessionDetailsResponse.result as HandleGetSessionDetailsResult;
+    expect(sessionResult?.threads, 'Should have threads').to.exist;
+    expect(
+      sessionResult!.threads!.length,
+      'Should have at least one thread',
+    ).to.be.greaterThan(0);
+
+    const mainThreadId = sessionResult!.threads![0].id;
+    console.log(`[INFO] Test: Found main thread ID: ${mainThreadId}`);
 
     // 2. Set Breakpoint
     const breakpointLine = 10;

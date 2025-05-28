@@ -414,11 +414,13 @@ export class InteractiveDebuggerMcpServer implements SessionProvider {
     );
 
     const dapHandler = wrappedSession.dapSessionHandler;
+    this.logger.debug(
+      `[storeDebugSession] Setting up event handlers for session ${mcpSessionId}. DapHandler: ${!!dapHandler}`,
+    );
     if (dapHandler && typeof dapHandler.on === 'function') {
       dapHandler.on('sessionEnded', (payload) => {
         this.logger.info(
-          `[storeDebugSession - dapHandler.on('sessionEnded')] Received for debugClientSessionId: ${payload.sessionId} (MCP ID: ${mcpSessionId}). Reason: ${payload.reason}`,
-          payload,
+          `[DAPEvent] SessionEnded for mcpSessionId: ${mcpSessionId}, dcSessionId: ${payload.sessionId}. Reason: ${payload.reason}`,
         );
 
         const wasActive = this.activeSessions.delete(mcpSessionId);
@@ -432,18 +434,13 @@ export class InteractiveDebuggerMcpServer implements SessionProvider {
           );
         }
 
-        const eventData = {
+        this._queueAsyncEvent(mcpSessionId, 'unexpected_session_termination', {
           reason: payload.reason,
           restart: payload.restart,
           underlyingError: payload.underlyingError,
           exitCode: payload.exitCode,
           signal: payload.signal,
-        };
-        this._queueAsyncEvent(
-          mcpSessionId,
-          'unexpected_session_termination',
-          eventData,
-        );
+        });
       });
 
       dapHandler.on('error', (payload: { sessionId: string; error: Error }) => {
@@ -452,21 +449,19 @@ export class InteractiveDebuggerMcpServer implements SessionProvider {
             `[storeDebugSession - dapHandler.on('error')] Received for debugClientSessionId: ${payload.sessionId} (MCP ID: ${mcpSessionId})`,
             payload.error,
           );
-          const errorData = {
+          this._queueAsyncEvent(mcpSessionId, 'dap_session_handler_error', {
             message: payload.error.message,
             name: payload.error.name,
             stack: payload.error.stack,
-          };
-          this._queueAsyncEvent(
-            mcpSessionId,
-            'dap_session_handler_error',
-            errorData,
-          );
+          });
         }
       });
 
       dapHandler.on('output', (payload) => {
         if (payload.sessionId === mcpSessionId) {
+          this.logger.debug(
+            `[DAPEvent] Output for mcpSessionId: ${mcpSessionId}, dcSessionId: ${payload.sessionId}, category: ${payload.category}`,
+          );
           this._queueAsyncEvent(mcpSessionId, 'dap_event_output', {
             category: payload.category,
             output: payload.output,
@@ -547,6 +542,14 @@ export class InteractiveDebuggerMcpServer implements SessionProvider {
     );
   }
 
+  public queueAsyncEvent(
+    sessionId: string,
+    eventType: McpAsyncEventType,
+    data: unknown,
+  ): void {
+    this._queueAsyncEvent(sessionId, eventType, data);
+  }
+
   public drainAsyncEventQueue(): McpAsyncEvent[] {
     const events = [...this.asyncEventQueue];
     this.asyncEventQueue = [];
@@ -584,6 +587,12 @@ export class InteractiveDebuggerMcpServer implements SessionProvider {
       return foundEvent;
     }
     return undefined;
+  }
+
+  public getEventsForSession(sessionId: string): McpAsyncEvent[] {
+    return this.asyncEventQueue.filter(
+      (event) => event.sessionId === sessionId,
+    );
   }
 
   public removeDebugSession(sessionId: string): void {

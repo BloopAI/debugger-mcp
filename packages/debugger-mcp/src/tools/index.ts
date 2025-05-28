@@ -63,6 +63,12 @@ export interface SessionProvider {
     eventType: McpAsyncEventType,
     removeIfFound?: boolean,
   ): McpAsyncEvent | undefined;
+  getEventsForSession(sessionId: string): McpAsyncEvent[];
+  queueAsyncEvent(
+    sessionId: string,
+    eventType: McpAsyncEventType,
+    data: unknown,
+  ): void;
 }
 
 import {
@@ -1399,7 +1405,7 @@ export async function handleGetSessionDetails(
       threads: [],
       callStack: [],
       breakpoints: [],
-      pendingEventsForSession: [], // Specific event peeking per session is not tacked yet.
+      pendingEventsForSession: sessionProvider.getEventsForSession(sessionId),
     };
 
     const debugSession = sessionProvider.getDebugSession(sessionId);

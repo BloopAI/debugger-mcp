@@ -505,7 +505,7 @@ export class DebugSession {
           // We sent a breakpoint to be set, but the adapter returned an empty list.
           // This implies the breakpoint was not set/verified by the adapter.
           this._logger.warn(
-            `SetBreakpoints response for ${config.filePath}:${config.line} returned an empty breakpoints array. This means the breakpoint was not set by the adapter.`,
+            `SetBreakpoints response for ${config.filePath}:${config.line} returned an empty breakpoints array. This may indicate an adapter issue.`,
             { responseBody: response.body },
           );
           throw new BreakpointError(

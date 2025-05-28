@@ -352,50 +352,69 @@ export class DAPSessionHandler
     this._protocolClient.on(
       'initialized',
       async (_event: DebugProtocol.InitializedEvent) => {
-        this._logger.info(
-          '[DAPSessionHandler] Received "initialized" event from DAPProtocolClient (adapter is ready for configuration)',
-        );
-        if (this._status === 'initializing') {
-          this.updateStatus('initialized');
+        try {
+          this._logger.debug(
+            `[DAPSessionHandler] Received initialized event for session: ${this.sessionId}. Current status: ${this._status}`,
+          );
+          this._logger.info(
+            '[DAPSessionHandler] Received "initialized" event from DAPProtocolClient (adapter is ready for configuration)',
+          );
+          if (this._status === 'initializing') {
+            this._logger.debug(
+              '[DAPSessionHandler] Status is "initializing", proceeding with configuration.',
+            );
+            this.updateStatus('initialized');
 
-          const capabilities = this.getAdapterCapabilities();
-          if (
-            !this._configurationDoneSent &&
-            capabilities.supportsConfigurationDoneRequest
-          ) {
-            this._logger.info(
-              `Adapter supports 'configurationDone' and it hasn't been sent yet. Sending request upon 'initialized' event for session '${this.sessionId}'.`,
-            );
-            try {
-              await this.configurationDone();
+            const capabilities = this.getAdapterCapabilities();
+            if (
+              !this._configurationDoneSent &&
+              capabilities.supportsConfigurationDoneRequest
+            ) {
               this._logger.info(
-                `'configurationDone' request sent successfully upon 'initialized' event for session '${this.sessionId}'.`,
+                `Adapter supports 'configurationDone' and it hasn't been sent yet. Sending request upon 'initialized' event for session '${this.sessionId}'.`,
               );
-            } catch (configDoneError) {
-              this._logger.error(
-                `Error sending 'configurationDone' upon 'initialized' event for session '${this.sessionId}'. This may cause issues.`,
-                { configDoneError },
+              try {
+                await this.configurationDone();
+                this._logger.info(
+                  `'configurationDone' request sent successfully upon 'initialized' event for session '${this.sessionId}'.`,
+                );
+              } catch (configDoneError) {
+                this._logger.error(
+                  `Error sending 'configurationDone' upon 'initialized' event for session '${this.sessionId}'. This may cause issues.`,
+                  { configDoneError },
+                );
+                this.emit('configurationDoneFailed', {
+                  sessionId: this.sessionId,
+                  error: configDoneError,
+                });
+              }
+            } else if (this._configurationDoneSent) {
+              this._logger.info(
+                `'configurationDone' was already sent for session '${this.sessionId}'. Skipping in 'initialized' event handler.`,
               );
-              this.emit('configurationDoneFailed', {
-                sessionId: this.sessionId,
-                error: configDoneError,
-              });
+            } else {
+              this._logger.info(
+                `Adapter does not support 'configurationDone'. Skipping for session '${this.sessionId}' upon 'initialized' event.`,
+              );
             }
-          } else if (this._configurationDoneSent) {
-            this._logger.info(
-              `'configurationDone' was already sent for session '${this.sessionId}'. Skipping in 'initialized' event handler.`,
+            this._logger.debug(
+              `[DAPSessionHandler] Emitting 'adapterInitializedAndConfigured' for session: ${this.sessionId}`,
             );
+            this.emit('adapterInitializedAndConfigured', {
+              sessionId: this.sessionId,
+            });
           } else {
-            this._logger.info(
-              `Adapter does not support 'configurationDone'. Skipping for session '${this.sessionId}' upon 'initialized' event.`,
+            this._logger.warn(
+              `[DAPSessionHandler] Initialized event for session ${this.sessionId}: status is '${this._status}', not 'initializing'.`,
+            );
+            this._logger.warn(
+              `[DAPSessionHandler] Received "initialized" event in unexpected state: ${this._status}. Not sending configurationDone or emitting ready.`,
             );
           }
-          this.emit('adapterInitializedAndConfigured', {
-            sessionId: this.sessionId,
-          });
-        } else {
-          this._logger.warn(
-            `[DAPSessionHandler] Received "initialized" event in unexpected state: ${this._status}. Not sending configurationDone or emitting ready.`,
+        } catch (error) {
+          this._logger.error(
+            { err: error },
+            '[DAPSessionHandler] Error in "initialized" event handler',
           );
         }
       },

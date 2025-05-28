@@ -1102,7 +1102,13 @@ export class SessionManager {
     this.logger.info(
       `Session '${sessionId}' ${launchMode} and configurationDone (if applicable) processed. Waiting for adapter to be fully initialized and configured...`,
     );
+    this.logger.debug(
+      `[SessionManager] About to await adapterReadyPromise for session: ${sessionId}`,
+    );
     await adapterReadyPromise;
+    this.logger.debug(
+      `[SessionManager] adapterReadyPromise resolved for session: ${sessionId}`,
+    );
 
     this.logger.info(
       `Session '${sessionId}' is fully ready and ${launchMode} process is underway. DAPSessionHandler status: ${sessionHandler.status}.`,

@@ -26,6 +26,7 @@
     "dap"
   ],
   "devDependencies": {
+    "@bloopai/js-debug-adapter-stdio": "0.1.0",
     "@types/chai": "^4.3.20",
     "@types/fs-extra": "^11.0.4",
     "@types/mocha": "^10.0.10",

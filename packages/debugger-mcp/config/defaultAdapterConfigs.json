@@ -5,6 +5,12 @@
       "args": ["run", "--with", "debugpy", "-m", "debugpy.adapter"],
       "env": {},
       "cwd": ""
+    },
+    "node": {
+      "command": "npx",
+      "args": ["@bloopai/js-debug-adapter-stdio"],
+      "env": {},
+      "cwd": ""
     }
   }
 }
