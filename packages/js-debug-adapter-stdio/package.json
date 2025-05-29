@@ -1,8 +1,9 @@
 {
   "name": "@bloopai/js-debug-adapter-stdio",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "A wrapper to run vscode-js-debug DAP server in stdio mode.",
   "main": "./bin/run-adapter.js",
+  "author": "bloop",
   "bin": {
     "js-debug-adapter-stdio": "./bin/run-adapter.js"
   },
@@ -18,7 +19,6 @@
     "typescript",
     "stdio"
   ],
-  "author": "",
   "license": "MIT",
   "dependencies": {
     "tar": "^6.1.11"

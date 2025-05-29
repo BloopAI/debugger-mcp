@@ -8,7 +8,7 @@
     },
     "node": {
       "command": "npx",
-      "args": ["@bloopai/js-debug-adapter-stdio"],
+      "args": ["--yes", "@bloopai/js-debug-adapter-stdio"],
       "env": {},
       "cwd": ""
     }
