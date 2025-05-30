@@ -56,16 +56,6 @@ export const setBreakpointSchema = {
       type: 'number',
       description: 'The line number for the breakpoint (1-based).',
     },
-    condition: {
-      type: 'string',
-      description:
-        'Optional expression that must evaluate to true for the breakpoint to hit (e.g., "i > 10"). Behavior depends on debug adapter capabilities.',
-    },
-    logMessage: {
-      type: 'string',
-      description:
-        'Optional message to log when the breakpoint is hit. Some adapters support expressions in curly braces (e.g., "Value of x is {x}") for logpoints. Behavior depends on debug adapter capabilities.',
-    },
   },
 };
 

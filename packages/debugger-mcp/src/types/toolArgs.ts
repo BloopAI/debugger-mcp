@@ -15,9 +15,6 @@ export interface SetBreakpointArgs {
   sessionId: string;
   filePath: string;
   lineNumber: number;
-  condition?: string;
-  logMessage?: string;
-  hitCondition?: string;
 }
 
 export interface EvaluateExpressionArgs {

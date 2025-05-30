@@ -664,7 +664,7 @@ export class InteractiveDebuggerMcpServer implements SessionProvider {
     );
     registerTool<SetBreakpointArgs, HandleSetBreakpointResult>(
       'set_breakpoint',
-      'Sets a breakpoint in a file at a given line, with optional conditions or log messages.',
+      'Sets a breakpoint in a file at a given line.',
       setBreakpointSchema,
       handleSetBreakpoint,
     );

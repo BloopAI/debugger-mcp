@@ -857,15 +857,6 @@ export async function handleSetBreakpoint(
       args.filePath!,
       args.lineNumber!,
     );
-    if (args.condition) {
-      configBuilder.withCondition(args.condition);
-    }
-    if (args.logMessage) {
-      configBuilder.withLogMessage(args.logMessage);
-    }
-    if (args.hitCondition) {
-      configBuilder.withHitCondition(args.hitCondition);
-    }
 
     const edcResult: EDCBreakpointResult = await ergonomicSession.setBreakpoint(
       configBuilder.build(),
