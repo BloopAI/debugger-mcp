@@ -1,6 +1,6 @@
 {
   "name": "@bloopai/debugger-mcp",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "author": "bloop",
   "license": "MIT",
   "description": "An MCP server that provides interactive debugging capabilities to AI coding agents",
