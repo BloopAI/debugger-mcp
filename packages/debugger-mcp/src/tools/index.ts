@@ -77,8 +77,8 @@ import {
   DAPSessionHandler,
   LoggerInterface,
   SessionStatus,
-  BreakpointResult as EDCBreakpointResult,
-  EvaluationResult as EDCEvaluationResult,
+  BreakpointResult,
+  EvaluationResult,
   BreakpointConfigBuilder,
   AdapterConfig,
 } from '@bloopai/ergonomic-debugger-client';
@@ -89,7 +89,6 @@ import {
   EvaluationResult as ModelEvaluationResult,
   ModelStackFrame,
   ModelThread,
-  ModelSource,
   Variable as ModelVariable,
   SessionState as ModelSessionState,
 } from '../types';
@@ -410,6 +409,29 @@ function _ensureThreadIsStopped(
       .build();
   }
 }
+
+function mapDebuggerStackFrameToModel(
+  debuggerFrame: DebugProtocol.StackFrame,
+  threadId?: number,
+): ModelStackFrame {
+  return {
+    id: debuggerFrame.id,
+    name: debuggerFrame.name,
+    source: debuggerFrame.source
+      ? {
+          name: debuggerFrame.source.name,
+          path: debuggerFrame.source.path,
+          sourceReference: debuggerFrame.source.sourceReference,
+          adapterData: debuggerFrame.source.adapterData,
+        }
+      : undefined,
+    line: debuggerFrame.line,
+    column: debuggerFrame.column,
+    instructionPointerReference: debuggerFrame.instructionPointerReference,
+    threadId: threadId,
+  };
+}
+
 /**
  * Generic helper to perform a step operation (over, in, out),
  * wait for the 'stopped' event, and handle common outcomes.
@@ -469,10 +491,36 @@ async function _performStepOperation(
     };
   }
 
+  let topStackFrame: ModelStackFrame | undefined;
+
+  if (stoppedEvent) {
+    try {
+      const stackFrames = await debugSession.getCallStack(
+        stoppedEvent.threadId as number,
+      );
+      if (stackFrames.length > 0) {
+        const topFrameFromDebugger = stackFrames[0];
+        topStackFrame = mapDebuggerStackFrameToModel(
+          topFrameFromDebugger,
+          stoppedEvent.threadId,
+        );
+      }
+    } catch (e) {
+      sessionProvider
+        .getLogger()
+        .warn(
+          `[${toolName}] Error getting stack frame for location: ${
+            (e as Error).message
+          }`,
+        );
+    }
+  }
+
   return {
     sessionState: ModelSessionState.STOPPED,
     stoppedEvent,
     outputEvents,
+    topStackFrame,
   };
 }
 
@@ -744,7 +792,7 @@ export async function handleStartDebugSession(
     const sessionId = dapHandler.sessionId;
     const startTime = new Date();
 
-    const ergoSession = sessionProvider.createDebugSession(
+    const debugSession = sessionProvider.createDebugSession(
       dapHandler,
       targetTypeToUse,
       args.targetPath,
@@ -752,7 +800,7 @@ export async function handleStartDebugSession(
     );
     sessionProvider.storeDebugSession(
       sessionId,
-      ergoSession,
+      debugSession,
       startTime,
       targetTypeToUse,
       args.targetPath,
@@ -847,7 +895,7 @@ export async function handleSetBreakpoint(
       args.sessionId,
     );
 
-    const ergonomicSession = await getActiveDebugSessionOrThrow(
+    const debugSession = await getActiveDebugSessionOrThrow(
       sessionProvider,
       args.sessionId,
       'set_breakpoint',
@@ -858,15 +906,14 @@ export async function handleSetBreakpoint(
       args.lineNumber!,
     );
 
-    const edcResult: EDCBreakpointResult = await ergonomicSession.setBreakpoint(
-      configBuilder.build(),
-    );
+    const resultFromDebugger: BreakpointResult =
+      await debugSession.setBreakpoint(configBuilder.build());
 
     return {
-      breakpointId: edcResult.id,
-      verified: edcResult.verified,
-      line: edcResult.line,
-      message: edcResult.message,
+      breakpointId: resultFromDebugger.id,
+      verified: resultFromDebugger.verified,
+      line: resultFromDebugger.line,
+      message: resultFromDebugger.message,
     };
   } catch (error: unknown) {
     if (error instanceof McpError) throw error;
@@ -900,7 +947,7 @@ export async function handleEvaluateExpression(
       args.sessionId,
     );
 
-    const ergonomicSession = await getActiveDebugSessionOrThrow(
+    const debugSession = await getActiveDebugSessionOrThrow(
       sessionProvider,
       args.sessionId,
       'evaluate_expression',
@@ -912,19 +959,19 @@ export async function handleEvaluateExpression(
         ? (args.context as 'watch' | 'repl' | 'hover')
         : 'repl';
 
-    const edcResult: EDCEvaluationResult =
-      await ergonomicSession.evaluateExpression(
+    const resultFromDebugger: EvaluationResult =
+      await debugSession.evaluateExpression(
         args.expression!,
         args.frameId,
         evaluationContext,
       );
 
     return {
-      result: edcResult.result,
-      type: edcResult.type,
-      variablesReference: edcResult.variablesReference,
-      namedVariables: edcResult.namedVariables,
-      indexedVariables: edcResult.indexedVariables,
+      result: resultFromDebugger.result,
+      type: resultFromDebugger.type,
+      variablesReference: resultFromDebugger.variablesReference,
+      namedVariables: resultFromDebugger.namedVariables,
+      indexedVariables: resultFromDebugger.indexedVariables,
     };
   } catch (error: unknown) {
     if (error instanceof McpError) throw error;
@@ -958,16 +1005,16 @@ export async function handleGetVariables(
       args.sessionId,
     );
 
-    const ergonomicSession = await getActiveDebugSessionOrThrow(
+    const debugSession = await getActiveDebugSessionOrThrow(
       sessionProvider,
       args.sessionId,
       'get_variables',
     );
 
-    const edcVariables: DebugProtocol.Variable[] =
-      await ergonomicSession.getVariables(args.variablesReference!);
+    const variablesFromDebugger: DebugProtocol.Variable[] =
+      await debugSession.getVariables(args.variablesReference!);
 
-    return edcVariables.map((v: DebugProtocol.Variable) => ({
+    return variablesFromDebugger.map((v: DebugProtocol.Variable) => ({
       name: v.name,
       value: v.value,
       type: v.type,
@@ -1006,7 +1053,7 @@ export async function handleGetCallStack(
 
     const localSessionId = args.sessionId!;
 
-    const ergonomicSession = await getActiveDebugSessionOrThrow(
+    const debugSession = await getActiveDebugSessionOrThrow(
       sessionProvider,
       localSessionId,
       'get_call_stack',
@@ -1020,16 +1067,12 @@ export async function handleGetCallStack(
       false, // For get_call_stack, a stopped thread is preferred but not strictly required
     );
 
-    const edcStackFrames = await ergonomicSession.getCallStack(targetThreadId);
+    const stackFramesFromDebugger =
+      await debugSession.getCallStack(targetThreadId);
 
-    return edcStackFrames.map((sf) => ({
-      id: sf.id,
-      name: sf.name,
-      source: sf.source,
-      line: sf.line,
-      column: sf.column,
-      instructionPointerReference: sf.instructionPointerReference,
-    }));
+    return stackFramesFromDebugger.map((sf) =>
+      mapDebuggerStackFrameToModel(sf, targetThreadId),
+    );
   } catch (error: unknown) {
     if (error instanceof McpError) throw error;
     throw new McpErrorBuilder()
@@ -1060,7 +1103,7 @@ export async function handleContinue(
       args.sessionId,
     );
 
-    const ergonomicSession = await getActiveDebugSessionOrThrow(
+    const debugSession = await getActiveDebugSessionOrThrow(
       sessionProvider,
       args.sessionId,
       toolName,
@@ -1125,7 +1168,7 @@ export async function handleContinue(
       },
     );
 
-    await ergonomicSession.continue(args.threadId);
+    await debugSession.continue(args.threadId);
 
     // Wait for either a stopped event or a terminated event
     const raceResult = await Promise.race([
@@ -1147,6 +1190,7 @@ export async function handleContinue(
 
     let stoppedEvent: DebugProtocol.StoppedEvent['body'] | undefined;
     let terminatedEventInfo: TerminatedEventInfo | undefined;
+    let topStackFrame: ModelStackFrame | undefined;
 
     if (raceResult.type === 'stopped' && raceResult.event) {
       stoppedEvent = raceResult.event;
@@ -1157,6 +1201,26 @@ export async function handleContinue(
             stoppedEvent.reason
           }`,
         );
+      try {
+        const stackFrames = await debugSession.getCallStack(
+          stoppedEvent.threadId as number,
+        );
+        if (stackFrames.length > 0) {
+          const topFrameFromDebugger = stackFrames[0];
+          topStackFrame = mapDebuggerStackFrameToModel(
+            topFrameFromDebugger,
+            stoppedEvent.threadId,
+          );
+        }
+      } catch (e) {
+        sessionProvider
+          .getLogger()
+          .warn(
+            `[${toolName}] Error getting stack frame for location after continue: ${
+              (e as Error).message
+            }`,
+          );
+      }
     } else if (raceResult.type === 'terminated' && raceResult.event) {
       terminatedEventInfo = raceResult.event;
       sessionProvider
@@ -1186,6 +1250,7 @@ export async function handleContinue(
       stoppedEvent,
       outputEvents,
       terminatedEvent: terminatedEventInfo,
+      topStackFrame,
     };
   } catch (error: unknown) {
     if (error instanceof McpError) throw error;
@@ -1218,7 +1283,7 @@ export async function handleStepOver(
     );
     const localSessionId = args.sessionId!;
 
-    const ergonomicSession = await getActiveDebugSessionOrThrow(
+    const debugSession = await getActiveDebugSessionOrThrow(
       sessionProvider,
       localSessionId,
       toolName,
@@ -1257,12 +1322,12 @@ export async function handleStepOver(
 
     const stepResult = await _performStepOperation(
       toolName,
-      ergonomicSession,
+      debugSession,
       dapHandler,
       targetThreadId,
       sessionProvider,
       localSessionId,
-      async (thrId: number) => ergonomicSession.stepOver(thrId),
+      async (thrId: number) => debugSession.stepOver(thrId),
     );
 
     return {
@@ -1302,8 +1367,8 @@ export async function handleTerminateSession(
       args.sessionId,
     );
 
-    const ergonomicSession = sessionProvider.getDebugSession(args.sessionId!);
-    if (!ergonomicSession) {
+    const debugSession = sessionProvider.getDebugSession(args.sessionId!);
+    if (!debugSession) {
       sessionProvider
         .getLogger()
         .warn(
@@ -1312,7 +1377,7 @@ export async function handleTerminateSession(
       return { success: true }; // Session already gone, consider it a success.
     }
 
-    await ergonomicSession.terminate();
+    await debugSession.terminate();
     sessionProvider
       .getLogger()
       .info(`[${toolName}] Terminated session ${args.sessionId}.`);
@@ -1431,28 +1496,13 @@ export async function handleGetSessionDetails(
             const callStackFromDebugSession =
               await debugSession.getCallStack(stoppedThreadId);
 
-            result.callStack = callStackFromDebugSession.map(
-              (frame): ModelStackFrame => {
-                let modelSource: ModelSource | undefined = undefined;
-                if (frame.source) {
-                  modelSource = {
-                    name: frame.source.name,
-                    path: frame.source.path,
-                    sourceReference: frame.source.sourceReference,
-                    adapterData: frame.source.adapterData,
-                  };
-                }
-                return {
-                  id: frame.id,
-                  name: frame.name,
-                  source: modelSource,
-                  line: frame.line,
-                  column: frame.column,
-                  instructionPointerReference:
-                    frame.instructionPointerReference,
-                };
-              },
-            );
+            result.callStack = callStackFromDebugSession.map((frame) => {
+              const modelFrame = mapDebuggerStackFrameToModel(
+                frame,
+                stoppedThreadId,
+              );
+              return modelFrame;
+            });
           }
         }
       } catch (err) {
@@ -1497,7 +1547,7 @@ export async function handleStepIn(
     );
     const localSessionId = args.sessionId!;
 
-    const ergonomicSession = await getActiveDebugSessionOrThrow(
+    const debugSession = await getActiveDebugSessionOrThrow(
       sessionProvider,
       localSessionId,
       toolName,
@@ -1536,12 +1586,12 @@ export async function handleStepIn(
 
     const stepResult = await _performStepOperation(
       toolName,
-      ergonomicSession,
+      debugSession,
       dapHandler,
       targetThreadId,
       sessionProvider,
       localSessionId,
-      async (thrId: number) => ergonomicSession.stepInto(thrId), // stepInto
+      async (thrId: number) => debugSession.stepInto(thrId),
     );
 
     return {
@@ -1579,7 +1629,7 @@ export async function handleStepOut(
     );
     const localSessionId = args.sessionId!;
 
-    const ergonomicSession = await getActiveDebugSessionOrThrow(
+    const debugSession = await getActiveDebugSessionOrThrow(
       sessionProvider,
       localSessionId,
       toolName,
@@ -1618,12 +1668,12 @@ export async function handleStepOut(
 
     const stepResult = await _performStepOperation(
       toolName,
-      ergonomicSession,
+      debugSession,
       dapHandler,
       targetThreadId,
       sessionProvider,
       localSessionId,
-      async (thrId: number) => ergonomicSession.stepOut(thrId),
+      async (thrId: number) => debugSession.stepOut(thrId),
     );
 
     return {

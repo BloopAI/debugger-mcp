@@ -74,6 +74,7 @@ export interface ModelStackFrame {
   line: number;
   column: number;
   instructionPointerReference?: string;
+  threadId?: number;
   // Note: To prevent circular dependencies in JSON serialization, we omit direct references to a the parent Thread object.
 }
 

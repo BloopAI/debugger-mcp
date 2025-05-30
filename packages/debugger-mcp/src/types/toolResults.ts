@@ -43,6 +43,7 @@ export interface HandleStepOperationBaseResult {
   outputEvents?: DebugProtocol.OutputEvent['body'][];
   terminatedEvent?: TerminatedEventInfo;
   error?: string;
+  topStackFrame?: ModelStackFrame;
 }
 export interface HandleContinueResult {
   success: boolean;
@@ -50,6 +51,7 @@ export interface HandleContinueResult {
   stoppedEvent?: DebugProtocol.StoppedEvent['body'];
   outputEvents?: DebugProtocol.OutputEvent['body'][];
   terminatedEvent?: TerminatedEventInfo;
+  topStackFrame?: ModelStackFrame;
 }
 
 export interface HandleStepOverResult extends HandleStepOperationBaseResult {
