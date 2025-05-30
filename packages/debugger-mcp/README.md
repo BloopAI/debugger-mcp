@@ -47,7 +47,7 @@ Add the debugger server to your MCP client configuration:
   "mcpServers": {
     "debugger-mcp": {
       "command": "npx",
-      "args": ["@bloopai/debugger-mcp"]
+      "args": ["--yes", "@bloopai/debugger-mcp"]
     }
   }
 }
