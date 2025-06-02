@@ -1,6 +1,14 @@
 # Debugger MCP
 
-A Model Context Protocol (MCP) server that provides comprehensive debugging capabilities for various programming languages through the Debug Adapter Protocol (DAP). This server enables AI assistants to debug programs interactively, set breakpoints, inspect variables, and step through code execution.
+A Model Context Protocol (MCP) server for connecting Debug Adapter Protocol (DAP) compatible debuggers to Claude, Roocode, Cursor, etc...
+
+DAP debuggers are the found in VSCode and other IDEs, and provide powerful features for setting breakpoints, reading the values of code, etc...
+
+This is useful in large complex codebases, where bugs aren't always obvious from looking at the code alone.
+
+The server supports debugging Python and Node projects, but can be easily extended to support other languages with DAP debuggers.
+
+![](debugger_mcp.gif)
 
 ## Features
 
@@ -22,7 +30,7 @@ A Model Context Protocol (MCP) server that provides comprehensive debugging capa
 
 ### Prerequisites
 
-- Node.js (for MCP server)
+- Node.js (for MCP server and Node debugging)
 - Python 3.7+ (for Python debugging)
 - `uv` and `debugpy` (for Python debugging)
 
@@ -58,6 +66,7 @@ Add the debugger server to your MCP client configuration:
 The server automatically configures debug adapters:
 
 - **Python**: Uses `debugpy.adapter` via uv or pip
+- **Node**: Uses `vscode-js-debug` which is downloaded automatically
 - **Working Directory**: Configurable per session
 - **Environment Variables**: Customizable for each debug session
 
