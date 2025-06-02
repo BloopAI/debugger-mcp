@@ -24,6 +24,7 @@ The server supports debugging Python and Node projects, but can be easily extend
 ### Supported Languages
 
 - **Python**: Full debugging support with debugpy adapter
+- **Node.js**: Full debugging support with vscode-js-debug
 - **Extensible**: Architecture supports additional language adapters
 
 ## Installation
