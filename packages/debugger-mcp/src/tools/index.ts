@@ -552,6 +552,7 @@ export class LaunchArgumentsBuilder {
     request: 'launch',
     type: '',
     name: '',
+    stopOnEntry: true,
   };
 
   constructor(mcpArgs: StartDebugSessionArgs) {
